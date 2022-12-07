@@ -1,16 +1,20 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-import Database from '@ioc:Adonis/Lucid/Database'
+import Country from 'App/Models/Country'
 export default class CountriesController {
-    public async index(ctx: HttpContextContract) {
+    public async index() {
         // GET /countrieinattendus
         // Cette fonction permet de retourner tous les pays contenus dans la base de données
-        return 'GEt all countries'
+        return await Country.all()
     }
 
     public async show(ctx: HttpContextContract) {
         // /GET /countries/:id
         // Fonction retourne un pays si il est trouvé dans la bd
-        return 'A country found'
+
+        const id = ctx.request.param('id')
+        // Récupération de l'id du pays rechercher
+
+        return await Country.findOrFail(id)
     }
 
     public async store(ctx: HttpContextContract) {
@@ -19,19 +23,44 @@ export default class CountriesController {
 
         const body = ctx.request.body() //TODO: validation des données
         //On récupère le contenue de la requêtes
+
+        const country = new Country()
+        // On crée une occurence du model
+
         ctx.response.status(201)
-        return await Database.table('countries').insert(body)
+        // Ajout du statut de la requête de création
+        // 201 car aucune validation sur les données recues.
+
+        return await country.fill(body).save()
+        // On renvoie la liste de tous les pays de la base de données.
     }
 
     public async update(ctx: HttpContextContract) {
         // PUT /countries/:id
         // FOnction modifie un pays existant dans la base de données si il est trouvé.
+        const body = ctx.request.body()
+        // On récupère les données envoyé pour modification
+
+        const id = ctx.request.param('id')
+        // On récupère l'id de la ligne à modifier
+
+        const country = await Country.findOrFail(id)
+        // On recherche la ligne de données à modifier
+
         ctx.response.status(204)
-        return 'New content modify'
+        // On set le statut de retour
+
+        return country.merge(body)
     }
 
     public async destroy(ctx: HttpContextContract) {
         // DELETE /countries/:id
         // FOnction permet de supprimer un pays existant par son ID
+
+        const countryId = ctx.request.param('id')
+        // A ce niveau, on récupère l'id de la ligne à supprimer
+
+        const country = await Country.findOrFail(countryId)
+        // ctx.response.status(204)
     }
 }
